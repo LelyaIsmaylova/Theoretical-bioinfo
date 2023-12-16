@@ -1,3 +1,5 @@
+from collections import defaultdict, deque
+
 def find_eulerian_path(edges):
     graph = defaultdict(list)
     degrees = defaultdict(int)
