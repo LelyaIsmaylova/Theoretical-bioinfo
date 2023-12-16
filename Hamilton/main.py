@@ -58,4 +58,4 @@ if file_name == '':
 if title == '': 
     title = head + ' assembled '
 
-write_fasta(file_name, genome, title )
+create_fasta(file_name, genome, title )
