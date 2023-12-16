@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 def can_build_de_bruijn_graph(edges):
     degrees = defaultdict(int)
     for (a, b), count in edges.items():
