@@ -3,10 +3,12 @@ from collections import defaultdict, deque
 def validate_fasta(sequences, k):
     valid_nucleotides = {'A', 'T', 'G', 'C'}
     for seq in sequences:
-        if len(seq) != k:
-            return False, f"Последовательность '{seq}' не является строкой длины {k}."
+        if not all(nucleotide in valid_nucleotides for nucleotide in seq) and len(seq) != k:
+            return False, f"Последовательность '{seq}' совсем плоха (содержит недопустимые элементы И не является строкой длины {k})."
         if not all(nucleotide in valid_nucleotides for nucleotide in seq):
             return False, f"Последовательность '{seq}' содержит недопустимые элементы (буквы)."
+        if len(seq) != k:
+            return False, f"Последовательность '{seq}' не является строкой длины {k}."
     return True, "Проверка прошла успешно."
 
 
@@ -24,7 +26,6 @@ def read_fasta(file_path):
         if sequence:
             sequences.append(sequence)
     return sequences
-
 
 def build_de_bruijn_graph(sequences, k):
     edges = defaultdict(int)
@@ -85,13 +86,15 @@ print(valid, message)
 de_bruijn_graph = build_de_bruijn_graph(sequences, k)
 
 valid2 = False
+
 if can_build_de_bruijn_graph(de_bruijn_graph):
-    print("A de Bruijn graph can be built.")
+    print("Проверка возможности построения графа де Брейна пройдена успешно.")
     valid2 = True
+    
 else:
-    print("A de Bruijn graph cannot be built from these sequences.")
+    print("Проверка возможности построения графа де Брейна не пройдена.")
 
 if valid and valid2:
     assembled_genome = assemble_genome(sequences, k)
-    with open('out.fa', 'w') as file:
+    with open('final.fa', 'w') as file:
         file.write('>out\n' + assembled_genome)
