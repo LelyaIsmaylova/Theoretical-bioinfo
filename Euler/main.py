@@ -1,13 +1,106 @@
-print('Enter title \n >')
-title = str(input())
+from collections import defaultdict, deque
 
-print('Enter file name ')
-file_name = str(input())
+def validate_fasta(sequences, k):
+    valid_nucleotides = {'A', 'T', 'G', 'C'}
+    for seq in sequences:
+        if len(seq) != k:
+            return False, f"Sequence '{seq}' does not have the required length of {k}."
+        if not all(nucleotide in valid_nucleotides for nucleotide in seq):
+            return False, f"Sequence '{seq}' contains invalid characters."
+    return True, "Validation successful."
 
-if file_name == '': 
-    file_name = 'New file'
-  
-if title == '': 
-    title = head + ' assembled '
 
-create_fasta(file_name, genome, title )
+def read_fasta(file_path):
+    sequences = []
+    with open(file_path, 'r') as file:
+        sequence = ''
+        for line in file:
+            if line.startswith('>'):
+                if sequence:
+                    sequences.append(sequence)
+                sequence = ''
+            else:
+                sequence += line.strip()
+        if sequence:
+            sequences.append(sequence)
+    return sequences
+
+
+def build_de_bruijn_graph(sequences, k):
+    edges = defaultdict(int)
+    for seq in sequences:
+        for i in range(len(seq) - k + 1):
+            kmer1 = seq[i:i+k-1]
+            kmer2 = seq[i+1:i+k]
+            edges[(kmer1, kmer2)] += 1
+    return edges
+
+def find_eulerian_path(edges):
+    graph = defaultdict(list)
+    degrees = defaultdict(int)
+    for (a, b), count in edges.items():
+        graph[a].append(b)
+        degrees[a] -= count
+        degrees[b] += count
+
+    # Находим начальную и конечную точки пути
+    start = next(node for node, degree in degrees.items() if degree < 0)
+    end = next(node for node, degree in degrees.items() if degree > 0)
+
+    # Используем стек для хранения пути
+    stack = [start]
+    path = deque()
+    while stack:
+        node = stack[-1]
+        if graph[node]:
+            next_node = graph[node].pop()
+            stack.append(next_node)
+        else:
+            path.appendleft(stack.pop())
+
+    # Правильное формирование итоговой строки
+    return ''.join([path[0]] + [node[-1] for node in list(path)[1:]])
+
+
+def assemble_genome(sequences, k):
+    de_bruijn_graph = build_de_bruijn_graph(sequences, k)
+    return find_eulerian_path(de_bruijn_graph)
+
+def can_build_de_bruijn_graph(edges):
+    degrees = defaultdict(int)
+    for (a, b), count in edges.items():
+        degrees[a] -= count
+        degrees[b] += count
+
+    start_nodes = sum(1 for degree in degrees.values() if degree < 0)
+    end_nodes = sum(1 for degree in degrees.values() if degree > 0)
+
+    # Для Эйлерова пути должно быть не более одной вершины с избытком исходящих
+    # и не более одной вершины с избытком входящих рёбер
+    return start_nodes <= 1 and end_nodes <= 1
+
+
+# Пример использования
+file_path = 'example.fa' # Замените на путь к вашему файлу
+
+# Пример использования
+k = 4  # Задаем желаемую длину последовательностей
+sequences = read_fasta(file_path)
+
+# Выполняем проверку
+valid, message = validate_fasta(sequences, k)
+print(valid, message)
+
+de_bruijn_graph = build_de_bruijn_graph(sequences, k)
+
+valid2 = False
+if can_build_de_bruijn_graph(de_bruijn_graph):
+    print("A de Bruijn graph can be built.")
+    valid2 = True
+else:
+    print("A de Bruijn graph cannot be built from these sequences.")
+
+if valid and valid2:
+    assembled_genome = assemble_genome(sequences, k)
+    with open('out.fa', 'w') as file:
+        file.write('>out\n' + assembled_genome)
