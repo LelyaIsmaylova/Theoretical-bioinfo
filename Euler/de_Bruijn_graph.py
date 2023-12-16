@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 def build_de_bruijn_graph(sequences, k):
     edges = defaultdict(int)
     for seq in sequences:
