@@ -1,0 +1,5 @@
+def create_fasta(file_name, seq_dict):
+    with open(file_name, 'w') as file:
+        for seq_id, seq in seq_dict.items():
+            file.write('>' + seq_id + '\n')
+            file.write(seq + '\n')
