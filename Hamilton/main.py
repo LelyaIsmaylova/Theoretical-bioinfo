@@ -49,13 +49,6 @@ for i in range(1, len(order)):
 
 print(genome)
 
-
-
-def write_fasta(filename, sequences, title):
-    with open(filename, 'w') as file:
-        file.write(f'>'+title)
-        file.write(f'{sequences}\n')
-
 print('Enter title \n >')
 title = str(input())
 print('Enter file name ')
