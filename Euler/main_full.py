@@ -4,10 +4,10 @@ def validate_fasta(sequences, k):
     valid_nucleotides = {'A', 'T', 'G', 'C'}
     for seq in sequences:
         if len(seq) != k:
-            return False, f"Sequence '{seq}' does not have the required length of {k}."
+            return False, f"Последовательность '{seq}' не является строкой длины {k}."
         if not all(nucleotide in valid_nucleotides for nucleotide in seq):
-            return False, f"Sequence '{seq}' contains invalid characters."
-    return True, "Validation successful."
+            return False, f"Последовательность '{seq}' содержит недопустимые элементы (буквы)."
+    return True, "Проверка прошла успешно."
 
 
 def read_fasta(file_path):
@@ -43,11 +43,9 @@ def find_eulerian_path(edges):
         degrees[a] -= count
         degrees[b] += count
 
-    # Находим начальную и конечную точки пути
     start = next(node for node, degree in degrees.items() if degree < 0)
     end = next(node for node, degree in degrees.items() if degree > 0)
 
-    # Используем стек для хранения пути
     stack = [start]
     path = deque()
     while stack:
@@ -58,7 +56,6 @@ def find_eulerian_path(edges):
         else:
             path.appendleft(stack.pop())
 
-    # Правильное формирование итоговой строки
     return ''.join([path[0]] + [node[-1] for node in list(path)[1:]])
 
 
@@ -75,19 +72,13 @@ def can_build_de_bruijn_graph(edges):
     start_nodes = sum(1 for degree in degrees.values() if degree < 0)
     end_nodes = sum(1 for degree in degrees.values() if degree > 0)
 
-    # Для Эйлерова пути должно быть не более одной вершины с избытком исходящих
-    # и не более одной вершины с избытком входящих рёбер
     return start_nodes <= 1 and end_nodes <= 1
 
+file_path = 'example.fa'
 
-# Пример использования
-file_path = 'example.fa' # Замените на путь к вашему файлу
-
-# Пример использования
-k = 4  # Задаем желаемую длину последовательностей
+k = 4
 sequences = read_fasta(file_path)
 
-# Выполняем проверку
 valid, message = validate_fasta(sequences, k)
 print(valid, message)
 
